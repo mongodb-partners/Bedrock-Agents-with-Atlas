@@ -1,4 +1,5 @@
 requests
-aws-lambda-powertools[tracer]
+aws-lambda-powertools
 pydantic
 pymongo
+pyopenssl
