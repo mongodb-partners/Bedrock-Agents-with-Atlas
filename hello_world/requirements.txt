@@ -3,3 +3,4 @@ aws-lambda-powertools
 pydantic
 pymongo
 pyopenssl
+aws-xray-sdk
