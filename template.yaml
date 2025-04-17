@@ -9,7 +9,7 @@ Globals: # https://docs.aws.amazon.com/serverless-application-model/latest/devel
   Function:
     Timeout: 50
     MemorySize: 128
-    Runtime: python3.11
+    Runtime: python3.9
 
     Tracing: Active
   Api:
@@ -36,15 +36,18 @@ Resources:
           POWERTOOLS_SERVICE_NAME: PowertoolsHelloWorld
           POWERTOOLS_METRICS_NAMESPACE: Powertools
           LOG_LEVEL: INFO
-          MONGO_DB: ""
-          MONGO_COLLECTION: ""
-          MONGO_URI: ""
+          MONGO_DB: "travel"
+          MONGO_COLLECTION: "asia"
       Policies:
       - Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Action:
               - bedrock:* 
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - secretsmanager:GetSecretValue
             Resource: "*"
           - Effect: Allow
             Action:
