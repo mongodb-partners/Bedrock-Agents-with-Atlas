@@ -131,7 +131,7 @@ def mongodb_search(query: Annotated[str,Query(description="place features")]) ->
         [
             {
                 "$vectorSearch": {
-                    "index": "awsanthropic_vector_index",
+                    "index": "travel_vector_index",
                     "path": "details_embedding",
                     "queryVector": embedding_value,
                     "numCandidates": 200,
@@ -178,13 +178,12 @@ def lambda_handler(event: dict, context: LambdaContext):
     logger.info("Lambda handler invoked")
     return app.resolve(event, context)
 
-def get_secret(secret_name, region_name="us-east-1"):
+def get_secret(secret_name):
     """
     Retrieve secret from AWS Secrets Manager
     """
     client = boto3.client(
-        service_name='secretsmanager',
-        region_name=region_name
+        service_name='secretsmanager'
     )
 
     try:
