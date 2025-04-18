@@ -3,9 +3,8 @@ aws-lambda-powertools[Logger, Tracer]
 pydantic
 langchain
 langchain-community
-langchain_aws
+langchain-aws
 pymongo
-langchain_mongodb
 pyopenssl
 aws-xray-sdk
 boto3
