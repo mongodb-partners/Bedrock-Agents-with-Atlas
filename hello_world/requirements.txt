@@ -4,3 +4,4 @@ pydantic
 pymongo
 pyopenssl
 aws-xray-sdk
+boto3
