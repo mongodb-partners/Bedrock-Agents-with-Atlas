@@ -11,13 +11,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger('mdb_import')
 
-def get_secret(secret_name, region_name="us-east-1"):
+def get_secret(secret_name):
     """
     Retrieve secret from AWS Secrets Manager
     """
     client = boto3.client(
-        service_name='secretsmanager',
-        region_name=region_name
+        service_name='secretsmanager'
     )
 
     try:
