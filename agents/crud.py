@@ -11,33 +11,49 @@ client = MongoClient(ATLAS_CONNECTION_STRING)
 def lambda_handler(event, context):
     agent = event['agent']
     actionGroup = event['actionGroup']
+    print("Action Group: ", actionGroup)
     function = event['function']
     parameters = event.get('parameters', [])
+    print("Parameters: ", parameters)
 
-    def insert_one(name, age):
-        return client[DB_NAME][COLLECTION].insert_one({"name": name, "age": age})
-
-    def find_one(name):
-        return client[DB_NAME][COLLECTION].find_one({"name": name}, {"_id": 0})
-
-    def delete_one(name):
-        return client[DB_NAME][COLLECTION].delete_one({"name": name})
+    def insert_one(params):
+        return client[DB_NAME][COLLECTION].insert_one(params)
     
-    def update_one(name, age):
-        return client[DB_NAME][COLLECTION].update_one({"name": name}, {"$set": {"name": name, "age": age}})
+    def insert_many(params):
+        return client[DB_NAME][COLLECTION].insert_many(params)
+
+    def find_one(params):
+        return client[DB_NAME][COLLECTION].find_one(params)
+
+    def find_many(filter_obj, projection_obj={}):
+        if len(projection_obj) > 0:
+            return list(client[DB_NAME][COLLECTION].find(filter_obj, projection_obj))
+        else:
+            return list(client[DB_NAME][COLLECTION].find(filter_obj))
+
+    def delete_one(params):
+        return client[DB_NAME][COLLECTION].delete_one(params)
+    
+    def delete_many(params):
+        return client[DB_NAME][COLLECTION].delete_many(params)
+    
+    def update_one(filter_obj, update_obj):
+        return client[DB_NAME][COLLECTION].update_one(filter_obj, update_obj)
+    
+    def update_many(filter_obj, update_obj):
+        return client[DB_NAME][COLLECTION].update_many(filter_obj, update_obj)
 
     # Extracting values from the params
     param_dict = {param['name'].lower(): (int(param['value']) if param['type'] == "number" else param['value']) for param in parameters}
-
+    json_obj = json.loads(param_dict['json_obj'])
     # Check the function name and execute the corresponding action
     if function == "insert_one":
-        name, age = param_dict.get("name"), param_dict.get("age")
-        if name is not None and age is not None:
+        if len(json_obj) > 0:
             try:
-                result = insert_one(name=name, age=age)
+                result = insert_one(json_obj)
                 result_txt = "Record added successfully"
             except ValueError:
-                result_txt = "Error: Some issue with the name/age parameter type"
+                result_txt = "Error: Some issue with the parameter type"
         else:
             result_txt = "Missing param"
 
@@ -47,15 +63,14 @@ def lambda_handler(event, context):
             }
         }
     elif function == "find_one":
-        name = param_dict.get("name")
-        if name is not None:
-            result = find_one(name=name)
+        if json_obj is not None:
+            result = find_one(json_obj)
             if result is not None:
                 result_txt = "Record found: {}".format(result)
             else:
-                result_txt = "No record with this name found"
+                result_txt = "No record found"
         else:
-            result_txt = "Missing param: Name"
+            result_txt = "Missing param"
         
         responseBody = {
             "TEXT": {
@@ -63,15 +78,14 @@ def lambda_handler(event, context):
             }
         }
     elif function == "delete_one":
-        name = param_dict.get("name")
-        if name is not None:
-            result = delete_one(name=name)
+        if json_obj is not None:
+            result = delete_one(json_obj)
             if result is not None:
                 result_txt = "Record deleted successfully"
             else:
-                result_txt = "No record with this name found"
+                result_txt = "No record found"
         else:
-            result_txt = "Missing param: Name"
+            result_txt = "Missing param"
         
         responseBody = {
             "TEXT": {
@@ -79,17 +93,77 @@ def lambda_handler(event, context):
             }
         }
     elif function == "update_one":
-        name, age = param_dict.get("name"), param_dict.get("age")
-        if name is not None and age is not None:
+        if 'filter' in json_obj and 'update' in json_obj:
             try:
-                record_exists = client[DB_NAME][COLLECTION].find_one({"name": name})
+                record_exists = find_one(json_obj['filter'])
                 if record_exists is not None:
-                    result = update_one(name=name, age=age)
+                    result = update_one(json_obj['filter'], json_obj['update'])
                     result_txt = "Record updated successfully"
                 else:
-                    result_txt = "Record with name: {} not found".format(name)
+                    result_txt = "Record not found"
             except ValueError:
-                result_txt = "Error: Some issue with the name/age parameter type"
+                result_txt = "Error: Some issue with the parameter type"
+        else:
+            result_txt = "Missing param"
+
+        responseBody = {
+            "TEXT": {
+                "body": result_txt
+            }
+        }
+    if function == "insert_many":
+        if json_obj is not None:
+            try:
+                result = insert_many(json_obj)
+                result_txt = "Records added successfully"
+            except ValueError:
+                result_txt = "Error: Some issue with the parameter type"
+        else:
+            result_txt = "Missing param"
+
+        responseBody = {
+            "TEXT": {
+                "body": result_txt
+            }
+        }
+    elif function == "find_many":
+        projection_obj = json_obj['projection'] if 'projection' in json_obj else {}
+        if 'filter' in json_obj:
+            result = find_many(json_obj['filter'], projection_obj)
+            if result is not None:
+                result_txt = "Record found: {}".format(result)
+            else:
+                result_txt = "No records found"
+        else:
+            result_txt = "Missing param"
+        
+        responseBody = {
+            "TEXT": {
+                "body": result_txt
+            }
+        }
+    elif function == "delete_many":
+        if json_obj is not None:
+            result = delete_many(json_obj)
+            if result is not None:
+                result_txt = "Record deleted successfully"
+            else:
+                result_txt = "No records found"
+        else:
+            result_txt = "Missing param"
+        
+        responseBody = {
+            "TEXT": {
+                "body": result_txt
+            }
+        }
+    elif function == "update_many":
+        if 'filter' in json_obj and 'update' in json_obj:
+            try:
+                result = update_many(json_obj['filter'], json_obj['update'])
+                result_txt = "Records updated successfully"
+            except ValueError:
+                result_txt = "Error: Some issue with the parameter type"
         else:
             result_txt = "Missing param"
 
