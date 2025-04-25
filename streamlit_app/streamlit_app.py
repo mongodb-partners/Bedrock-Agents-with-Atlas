@@ -16,7 +16,7 @@ def initialize_bedrock_agent_client():
     """Initialize the Bedrock agent runtime client."""
     return boto3.client(
         service_name="bedrock-agent-runtime",
-        region_name="us-east-1"
+        region_name="us-west-2"
     )
 
 def get_agent_response(agent_client, agent_id, user_input):
