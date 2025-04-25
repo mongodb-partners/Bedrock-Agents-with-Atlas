@@ -102,7 +102,7 @@ def setup_bedrock():
     logger.info("Setting up Bedrock runtime client")
     return boto3.client(
         service_name="bedrock-runtime",
-        region_name="us-east-1",
+        region_name="us-west-2",
     )
 
 
@@ -206,5 +206,5 @@ def get_mongo_client():
 
 
 if __name__ == "__main__":  
-    logger.info("Generating OpenAPI JSON schema")
+    # logger.info("Generating OpenAPI JSON schema")
     print(app.get_openapi_json_schema())
