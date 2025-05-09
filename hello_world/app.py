@@ -53,7 +53,7 @@ def place_lookup_by_country(query_str: Annotated[str, Query(description="The cou
 def get_travel_collection(client):
     logger.info("Getting travel collection from MongoDB")
     db = client['Integration']
-    collection = db['test_csv_load']
+    collection = db['asia']
     return collection
 
 @app.get("/get_place_by_name", description="Retrieve place information by place name")
