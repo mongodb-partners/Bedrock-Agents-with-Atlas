@@ -52,7 +52,7 @@ def place_lookup_by_country(query_str: Annotated[str, Query(description="The cou
 
 def get_travel_collection(client):
     logger.info("Getting travel collection from MongoDB")
-    db = client['Integration']
+    db = client['travel']
     collection = db['asia']
     return collection
 
